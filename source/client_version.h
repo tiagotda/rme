@@ -106,7 +106,7 @@ struct OtbVersion
 	ClientVersionID id;
 };
 
-// Formats for the .dat data file for Tibia
+// Formats for the metadata file
 enum DatFormat
 {
 	DAT_FORMAT_UNKNOWN,
@@ -117,8 +117,7 @@ enum DatFormat
 	DAT_FORMAT_96,
 	DAT_FORMAT_1010,
 	DAT_FORMAT_1050,
-	DAT_FORMAT_1057,
-	DAT_FORMAT_1092
+	DAT_FORMAT_1057
 };
 
 enum DatFlags : uint8_t
@@ -186,7 +185,7 @@ class ClientVersion : boost::noncopyable
 public:
 	ClientVersion(OtbVersion otb, std::string versionName, wxString path);
 	~ClientVersion() {}
-	
+
 	static void loadVersions();
 	static void unloadVersions();
 	static void saveVersions();
@@ -201,11 +200,11 @@ public:
 	static ClientVersion* getLatestVersion();
 
 	bool operator==(const ClientVersion& o) const {return otb.id == o.otb.id;}
-	
+
 	bool hasValidPaths() const;
 	bool loadValidPaths();
 	void setClientPath(const FileName& dir);
-	
+
 	bool isVisible() const;
 	std::string getName() const;
 
@@ -222,7 +221,7 @@ public:
 
 private:
 	OtbVersion otb;
-	
+
 	std::string name;
 	bool visible;
 	bool usesFuckedUpCharges;

@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -28,6 +28,8 @@ class Item;
 class Creature;
 class MapWindow;
 class MapPopupMenu;
+class AnimationTimer;
+class MapDrawer;
 
 class MapCanvas : public wxGLCanvas {
 public:
@@ -49,10 +51,11 @@ public:
 	void OnMouseRightRelease(wxMouseEvent& event);
 
 	void OnKeyDown(wxKeyEvent& event);
+	void OnKeyUp(wxKeyEvent& event);
 	void OnWheel(wxMouseEvent& event);
 	void OnGainMouse(wxMouseEvent& event);
 	void OnLoseMouse(wxMouseEvent& event);
-	
+
 	// Mouse events handlers (called by the above)
 	void OnMouseActionRelease(wxMouseEvent& event);
 	void OnMouseActionClick(wxMouseEvent& event);
@@ -61,10 +64,13 @@ public:
 	void OnMousePropertiesClick(wxMouseEvent& event);
 	void OnMousePropertiesRelease(wxMouseEvent& event);
 
-	// 
+	//
 	void OnCut(wxCommandEvent& event);
 	void OnCopy(wxCommandEvent& event);
 	void OnCopyPosition(wxCommandEvent& event);
+	void OnCopyServerId(wxCommandEvent& event);
+	void OnCopyClientId(wxCommandEvent& event);
+	void OnCopyName(wxCommandEvent& event);
 	void OnBrowseTile(wxCommandEvent& event);
 	void OnPaste(wxCommandEvent& event);
 	void OnDelete(wxCommandEvent& event);
@@ -96,7 +102,7 @@ public:
 	void EndPasting();
 	void EnterSelectionMode();
 	void EnterDrawingMode();
-	
+
 	void UpdatePositionStatus(int x = -1, int y = -1);
 	void UpdateZoomStatus();
 
@@ -109,12 +115,24 @@ public:
 	Position GetCursorPosition() const;
 
 	void TakeScreenshot(wxFileName path, wxString format);
-protected:
 
-	void getTilesToDraw(int mouse_map_x, int mouse_map_y, int floor, PositionVector* tilestodraw, PositionVector* tilestoborder);
-	
+protected:
+	void getTilesToDraw(int mouse_map_x, int mouse_map_y, int floor, PositionVector* tilestodraw, PositionVector* tilestoborder, bool fill = false);
+	void floodFill(Map *map, const Position& center, int x, int y, GroundBrush* brush, PositionVector* positions);
+
 private:
+	enum {
+		BLOCK_SIZE = 100
+	};
+
+	inline int getFillIndex(int x, int y) const { return x + BLOCK_SIZE * y; }
+
+	static bool processed[BLOCK_SIZE*BLOCK_SIZE];
+
 	Editor& editor;
+	MapDrawer *drawer;
+	int keyCode;
+
 // View related
 	int floor;
 	double zoom;
@@ -134,7 +152,7 @@ private:
 	int drag_start_x;
 	int drag_start_y;
 	int drag_start_z;
-	
+
 	int last_cursor_map_x;
 	int last_cursor_map_y;
 	int last_cursor_map_z;
@@ -157,6 +175,7 @@ private:
 
 	wxStopWatch refresh_watch;
 	MapPopupMenu* popup_menu;
+	AnimationTimer* animation_timer;
 
 	friend class MapDrawer;
 
@@ -172,6 +191,21 @@ public:
 	void Update();
 protected:
 	Editor& editor;
+};
+
+class AnimationTimer : public wxTimer
+{
+public:
+	AnimationTimer(MapCanvas *canvas);
+	~AnimationTimer();
+
+	void Notify();
+	void Start();
+	void Stop();
+
+private:
+	MapCanvas *map_canvas;
+	bool started;
 };
 
 #endif

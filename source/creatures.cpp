@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -26,9 +26,9 @@
 #include "creature_brush.h"
 #include "pugicast.h"
 
-CreatureDatabase creature_db;
+CreatureDatabase g_creatures;
 
-CreatureType::CreatureType() : 
+CreatureType::CreatureType() :
 	isNpc(false),
 	missing(false),
 	in_other_tileset(false),
@@ -39,7 +39,7 @@ CreatureType::CreatureType() :
 	////
 }
 
-CreatureType::CreatureType(const CreatureType& ct) : 
+CreatureType::CreatureType(const CreatureType& ct) :
 	isNpc(ct.isNpc),
 	missing(ct.missing),
 	in_other_tileset(ct.in_other_tileset),
@@ -72,18 +72,18 @@ CreatureType* CreatureType::loadFromXML(pugi::xml_node node, wxArrayString& warn
 {
 	pugi::xml_attribute attribute;
 	if(!(attribute = node.attribute("type"))) {
-		warnings.push_back(wxT("Couldn't read type tag of creature node."));
+		warnings.push_back("Couldn't read type tag of creature node.");
 		return nullptr;
 	}
 
 	const std::string& tmpType = attribute.as_string();
 	if(tmpType != "monster" && tmpType != "npc") {
-		warnings.push_back(wxT("Invalid type tag of creature node \"") + wxstr(tmpType) + wxT("\""));
+		warnings.push_back("Invalid type tag of creature node \"" + wxstr(tmpType) + "\"");
 		return nullptr;
 	}
 
 	if(!(attribute = node.attribute("name"))) {
-		warnings.push_back(wxT("Couldn't read name tag of creature node."));
+		warnings.push_back("Couldn't read name tag of creature node.");
 		return nullptr;
 	}
 
@@ -93,8 +93,8 @@ CreatureType* CreatureType::loadFromXML(pugi::xml_node node, wxArrayString& warn
 
 	if((attribute = node.attribute("looktype"))) {
 		ct->outfit.lookType = pugi::cast<int32_t>(attribute.value());
-		if(gui.gfx.getCreatureSprite(ct->outfit.lookType) == nullptr) {
-			warnings.push_back(wxT("Invalid creature \"") + wxstr(ct->name) + wxT("\" look type #") + std::to_string(ct->outfit.lookType));
+		if(g_gui.gfx.getCreatureSprite(ct->outfit.lookType) == nullptr) {
+			warnings.push_back("Invalid creature \"" + wxstr(ct->name) + "\" look type #" + std::to_string(ct->outfit.lookType));
 		}
 	}
 
@@ -135,13 +135,13 @@ CreatureType* CreatureType::loadFromOTXML(const FileName& filename, pugi::xml_do
 	} else if((node = doc.child("npc"))) {
 		isNpc = true;
 	} else {
-		warnings.push_back(wxT("This file is not a monster/npc file"));
+		warnings.push_back("This file is not a monster/npc file");
 		return nullptr;
 	}
 
 	pugi::xml_attribute attribute;
 	if(!(attribute = node.attribute("name"))) {
-		warnings.push_back(wxT("Couldn't read name tag of creature node."));
+		warnings.push_back("Couldn't read name tag of creature node.");
 		return nullptr;
 	}
 
@@ -219,7 +219,7 @@ CreatureType* CreatureDatabase::operator[](const std::string& name)
 CreatureType* CreatureDatabase::addMissingCreatureType(const std::string& name, bool isNpc)
 {
 	assert((*this)[name] == nullptr);
-	
+
 	CreatureType* ct = newd CreatureType();
 	ct->name = name;
 	ct->isNpc = isNpc;
@@ -233,7 +233,7 @@ CreatureType* CreatureDatabase::addMissingCreatureType(const std::string& name, 
 CreatureType* CreatureDatabase::addCreatureType(const std::string& name, bool isNpc, const Outfit& outfit)
 {
 	assert((*this)[name] == nullptr);
-	
+
 	CreatureType* ct = newd CreatureType();
 	ct->name = name;
 	ct->isNpc = isNpc;
@@ -259,13 +259,13 @@ bool CreatureDatabase::loadFromXML(const FileName& filename, bool standard, wxSt
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filename.GetFullPath().mb_str());
 	if(!result) {
-		error = wxT("Couldn't open file \"") + filename.GetFullName() + wxT("\", invalid format?");
+		error = "Couldn't open file \"" + filename.GetFullName() + "\", invalid format?";
 		return false;
 	}
 
 	pugi::xml_node node = doc.child("creatures");
 	if(!node) {
-		error = wxT("Invalid file signature, this file is not a valid creatures file.");
+		error = "Invalid file signature, this file is not a valid creatures file.";
 		return false;
 	}
 
@@ -278,7 +278,7 @@ bool CreatureDatabase::loadFromXML(const FileName& filename, bool standard, wxSt
 		if(creatureType) {
 			creatureType->standard = standard;
 			if((*this)[creatureType->name]) {
-				warnings.push_back(wxT("Duplicate creature type name \"") + wxstr(creatureType->name) + wxT("\"! Discarding..."));
+				warnings.push_back("Duplicate creature type name \"" + wxstr(creatureType->name) + "\"! Discarding...");
 				delete creatureType;
 			} else {
 				creature_map[as_lower_str(creatureType->name)] = creatureType;
@@ -293,7 +293,7 @@ bool CreatureDatabase::importXMLFromOT(const FileName& filename, wxString& error
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filename.GetFullPath().mb_str());
 	if(!result) {
-		error = wxT("Couldn't open file \"") + filename.GetFullName() + wxT("\", invalid format?");
+		error = "Couldn't open file \"" + filename.GetFullName() + "\", invalid format?";
 		return false;
 	}
 
@@ -329,14 +329,14 @@ bool CreatureDatabase::importXMLFromOT(const FileName& filename, wxString& error
 
 					Tileset* tileSet = nullptr;
 					if(creatureType->isNpc) {
-						tileSet = materials.tilesets["NPCs"];
+						tileSet = g_materials.tilesets["NPCs"];
 					} else {
-						tileSet = materials.tilesets["Others"];
+						tileSet = g_materials.tilesets["Others"];
 					}
 					ASSERT(tileSet != nullptr);
-					
+
 					Brush* brush = newd CreatureBrush(creatureType);
-					brushes.addBrush(brush);
+					g_brushes.addBrush(brush);
 
 					TilesetCategory* tileSetCategory = tileSet->getCategory(TILESET_CREATURE);
 					tileSetCategory->brushlist.push_back(brush);
@@ -356,21 +356,21 @@ bool CreatureDatabase::importXMLFromOT(const FileName& filename, wxString& error
 
 				Tileset* tileSet = nullptr;
 				if(creatureType->isNpc) {
-					tileSet = materials.tilesets["NPCs"];
+					tileSet = g_materials.tilesets["NPCs"];
 				} else {
-					tileSet = materials.tilesets["Others"];
+					tileSet = g_materials.tilesets["Others"];
 				}
 				ASSERT(tileSet != nullptr);
 
 				Brush* brush = newd CreatureBrush(creatureType);
-				brushes.addBrush(brush);
+				g_brushes.addBrush(brush);
 
 				TilesetCategory* tileSetCategory = tileSet->getCategory(TILESET_CREATURE);
 				tileSetCategory->brushlist.push_back(brush);
 			}
 		}
 	} else {
-		error = wxT("This is not valid OT npc/monster data file.");
+		error = "This is not valid OT npc/monster data file.";
 		return false;
 	}
 	return true;
@@ -379,7 +379,7 @@ bool CreatureDatabase::importXMLFromOT(const FileName& filename, wxString& error
 bool CreatureDatabase::saveToXML(const FileName& filename)
 {
 	pugi::xml_document doc;
-	
+
 	pugi::xml_node decl = doc.prepend_child(pugi::node_declaration);
 	decl.append_attribute("version") = "1.0";
 

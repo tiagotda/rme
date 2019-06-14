@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ void CopyBuffer::clear()
 void CopyBuffer::copy(Editor& editor, int floor)
 {
 	if(editor.selection.size() == 0) {
-		gui.SetStatusText(wxT("No tiles to copy."));
+		g_gui.SetStatusText("No tiles to copy.");
 		return;
 	}
 
@@ -72,7 +72,7 @@ void CopyBuffer::copy(Editor& editor, int floor)
 	int item_count = 0;
 	copyPos = Position(0xFFFF, 0xFFFF, floor);
 
-	for(TileVector::iterator it = editor.selection.begin(); it != editor.selection.end(); ++it) {
+	for(TileSet::iterator it = editor.selection.begin(); it != editor.selection.end(); ++it) {
 		++tile_count;
 
 		Tile* tile = *it;
@@ -109,13 +109,13 @@ void CopyBuffer::copy(Editor& editor, int floor)
 
 	std::ostringstream ss;
 	ss << "Copied " << tile_count << " tile" << (tile_count > 1 ? "s" : "") <<  " (" << item_count << " item" << (item_count > 1? "s" : "") << ")";
-	gui.SetStatusText(wxstr(ss.str()));
+	g_gui.SetStatusText(wxstr(ss.str()));
 }
 
 void CopyBuffer::cut(Editor& editor, int floor)
 {
 	if(editor.selection.size() == 0) {
-		gui.SetStatusText(wxT("No tiles to cut."));
+		g_gui.SetStatusText("No tiles to cut.");
 		return;
 	}
 
@@ -131,7 +131,7 @@ void CopyBuffer::cut(Editor& editor, int floor)
 
 	PositionList tilestoborder;
 
-	for(TileVector::iterator it = editor.selection.begin(); it != editor.selection.end(); ++it) {
+	for(TileSet::iterator it = editor.selection.begin(); it != editor.selection.end(); ++it) {
 		tile_count++;
 
 		Tile* tile = *it;
@@ -172,7 +172,7 @@ void CopyBuffer::cut(Editor& editor, int floor)
 			copyPos.y = copied_tile->getY();
 		}
 
-		if(settings.getInteger(Config::USE_AUTOMAGIC)) {
+		if(g_settings.getInteger(Config::USE_AUTOMAGIC)) {
 			for(int y = -1; y <= 1; y++)
 				for(int x = -1; x <= 1; x++)
 					tilestoborder.push_back(Position(tile->getX() + x, tile->getY() + y, tile->getZ()));
@@ -186,7 +186,7 @@ void CopyBuffer::cut(Editor& editor, int floor)
 	tilestoborder.sort();
 	tilestoborder.unique();
 
-	if(settings.getInteger(Config::USE_AUTOMAGIC)) {
+	if(g_settings.getInteger(Config::USE_AUTOMAGIC)) {
 		action = editor.actionQueue->createAction(batch);
 		for(PositionList::iterator it = tilestoborder.begin(); it != tilestoborder.end(); ++it) {
 			TileLocation* location = editor.map.createTileL(*it);
@@ -212,7 +212,7 @@ void CopyBuffer::cut(Editor& editor, int floor)
 	editor.addBatch(batch);
 	std::stringstream ss;
 	ss << "Cut out " << tile_count << " tile" << (tile_count > 1 ? "s" : "") <<  " (" << item_count << " item" << (item_count > 1? "s" : "") << ")";
-	gui.SetStatusText(wxstr(ss.str()));
+	g_gui.SetStatusText(wxstr(ss.str()));
 }
 
 void CopyBuffer::paste(Editor& editor, const Position& toPosition)
@@ -229,14 +229,14 @@ void CopyBuffer::paste(Editor& editor, const Position& toPosition)
 
 		if(!pos.isValid())
 			continue;
-		
+
 		TileLocation* location = editor.map.createTileL(pos);
 		Tile* copy_tile = buffer_tile->deepCopy(editor.map);
 		Tile* old_dest_tile = location->get();
 		Tile* new_dest_tile = nullptr;
 		copy_tile->setLocation(location);
 
-		if(settings.getInteger(Config::MERGE_PASTE) || !copy_tile->ground) {
+		if(g_settings.getInteger(Config::MERGE_PASTE) || !copy_tile->ground) {
 			if(old_dest_tile)
 				new_dest_tile = old_dest_tile->deepCopy(editor.map);
 			else
@@ -262,7 +262,7 @@ void CopyBuffer::paste(Editor& editor, const Position& toPosition)
 	}
 	batchAction->addAndCommitAction(action);
 
-	if(settings.getInteger(Config::USE_AUTOMAGIC) && settings.getInteger(Config::BORDERIZE_PASTE)) {
+	if(g_settings.getInteger(Config::USE_AUTOMAGIC) && g_settings.getInteger(Config::BORDERIZE_PASTE)) {
 		action = editor.actionQueue->createAction(batchAction);
 		TileList borderize_tiles;
 		Map& map = editor.map;
@@ -294,7 +294,7 @@ void CopyBuffer::paste(Editor& editor, const Position& toPosition)
 			if(tile) {
 				Tile* newTile = tile->deepCopy(editor.map);
 				newTile->borderize(&map);
-				
+
 				if(tile->ground && tile->ground->isSelected()) {
 					newTile->selectGround();
 				}

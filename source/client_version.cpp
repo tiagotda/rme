@@ -27,16 +27,16 @@ void ClientVersion::loadVersions()
 	wxFileName file_to_load;
 
 	wxFileName exec_dir_client_xml;
-	exec_dir_client_xml.Assign(gui.GetExecDirectory());
-	exec_dir_client_xml.SetFullName(wxT("clients.xml"));
-	
+	exec_dir_client_xml.Assign(g_gui.GetExecDirectory());
+	exec_dir_client_xml.SetFullName("clients.xml");
+
 	wxFileName data_dir_client_xml;
-	data_dir_client_xml.Assign(gui.GetDataDirectory());
-	data_dir_client_xml.SetFullName(wxT("clients.xml"));
+	data_dir_client_xml.Assign(g_gui.GetDataDirectory());
+	data_dir_client_xml.SetFullName("clients.xml");
 
 	wxFileName work_dir_client_xml;
-	work_dir_client_xml.Assign(gui.getFoundDataDirectory());
-	work_dir_client_xml.SetFullName(wxT("clients.xml"));
+	work_dir_client_xml.Assign(g_gui.getFoundDataDirectory());
+	work_dir_client_xml.SetFullName("clients.xml");
 
 	file_to_load = exec_dir_client_xml;
 	if(!file_to_load.FileExists()) {
@@ -51,8 +51,8 @@ void ClientVersion::loadVersions()
 
 	if(!file_to_load.FileExists()) {
 		wxLogError(wxString() +
-			wxT("Could not load clients.xml, editor will NOT be able to load any client data files.\n") +
-			wxT("Checked paths:\n") +
+			"Could not load clients.xml, editor will NOT be able to load any client data files.\n" +
+			"Checked paths:\n" +
 			exec_dir_client_xml.GetFullPath() + "\n" +
 			data_dir_client_xml.GetFullPath() + "\n" +
 			work_dir_client_xml.GetFullPath()
@@ -66,7 +66,7 @@ void ClientVersion::loadVersions()
 	if(result) {
 		pugi::xml_node node = doc.child("client_config");
 		if(!node) {
-			wxLogError(wxT("Could not load clients.xml (syntax error), editor will NOT be able to load any client data files."));
+			wxLogError("Could not load clients.xml (syntax error), editor will NOT be able to load any client data files.");
 			return;
 		}
 
@@ -109,7 +109,7 @@ void ClientVersion::loadVersions()
 	try
 	{
 		json::mValue read_obj;
-		json::read_or_throw(settings.getString(Config::TIBIA_DATA_DIRS), read_obj);
+		json::read_or_throw(g_settings.getString(Config::ASSETS_DATA_DIRS), read_obj);
 		json::mArray& vers_obj = read_obj.get_array();
 		for(json::mArray::iterator ver_iter = vers_obj.begin(); ver_iter != vers_obj.end(); ++ver_iter) {
 			json::mObject& ver_obj = ver_iter->get_obj();
@@ -144,26 +144,26 @@ void ClientVersion::loadOTBInfo(pugi::xml_node otbNode)
 
 	pugi::xml_attribute attribute;
 	if(!(attribute = otbNode.attribute("client"))) {
-		wxLogError(wxT("Node 'otb' must contain 'client' tag."));
+		wxLogError("Node 'otb' must contain 'client' tag.");
 		return;
 	}
 
 	OtbVersion otb = {"", OTB_VERSION_3, CLIENT_VERSION_NONE};
 	otb.name = attribute.as_string();
 	if(!(attribute = otbNode.attribute("id"))) {
-		wxLogError(wxT("Node 'otb' must contain 'id' tag."));
+		wxLogError("Node 'otb' must contain 'id' tag.");
 		return;
 	}
 
 	otb.id = pugi::cast<int32_t>(attribute.value());
 	if(!(attribute = otbNode.attribute("version"))) {
-		wxLogError(wxT("Node 'otb' must contain 'version' tag."));
+		wxLogError("Node 'otb' must contain 'version' tag.");
 		return;
 	}
 
 	OtbFormatVersion versionId = static_cast<OtbFormatVersion>(pugi::cast<uint32_t>(attribute.value()));
 	if(versionId < OTB_VERSION_1 || versionId > OTB_VERSION_3) {
-		wxLogError(wxT("Node 'otb' unrecognized format version (version 1..3 supported)."));
+		wxLogError("Node 'otb' unrecognized format version (version 1..3 supported).");
 		return;
 	}
 
@@ -175,25 +175,25 @@ void ClientVersion::loadVersion(pugi::xml_node versionNode)
 {
 	pugi::xml_attribute attribute;
 	if(!(attribute = versionNode.attribute("name"))) {
-		wxLogError(wxT("Node 'client' must contain 'name', 'data_directory' and 'otb' tags."));
+		wxLogError("Node 'client' must contain 'name', 'data_directory' and 'otb' tags.");
 		return;
 	}
 
 	const std::string& versionName = attribute.as_string();
 	if(!(attribute = versionNode.attribute("data_directory"))) {
-		wxLogError(wxT("Node 'client' must contain 'name', 'data_directory' and 'otb' tags."));
+		wxLogError("Node 'client' must contain 'name', 'data_directory' and 'otb' tags.");
 		return;
 	}
 
 	const std::string& dataPath = attribute.as_string();
 	if(!(attribute = versionNode.attribute("otb"))) {
-		wxLogError(wxT("Node 'client' must contain 'name', 'data_directory' and 'otb' tags."));
+		wxLogError("Node 'client' must contain 'name', 'data_directory' and 'otb' tags.");
 		return;
 	}
 
 	const std::string& otbVersionName = attribute.as_string();
 	if(otb_versions.find(otbVersionName) == otb_versions.end()) {
-		wxLogError(wxT("Node 'client' 'otb' tag is invalid (couldn't find this otb version)."));
+		wxLogError("Node 'client' 'otb' tag is invalid (couldn't find this otb version).");
 		return;
 	}
 
@@ -206,13 +206,13 @@ void ClientVersion::loadVersion(pugi::xml_node versionNode)
 		const std::string& childName = as_lower_str(childNode.name());
 		if(childName == "otbm") {
 			if(!(attribute = childNode.attribute("version"))) {
-				wxLogError(wxT("Node 'otbm' missing version."));
+				wxLogError("Node 'otbm' missing version.");
 				continue;
 			}
 
 			int32_t otbmVersion = pugi::cast<int32_t>(attribute.value()) - 1;
 			if(otbmVersion < MAP_OTBM_1 || otbmVersion > MAP_OTBM_4) {
-				wxLogError(wxT("Node 'otbm' unsupported version."));
+				wxLogError("Node 'otbm' unsupported version.");
 				continue;
 			}
 
@@ -225,7 +225,7 @@ void ClientVersion::loadVersion(pugi::xml_node versionNode)
 		} else if(childName == "data") {
 
 			if(!(attribute = childNode.attribute("format"))) {
-				wxLogError(wxT("Node 'data' does not have 'format' tag."));
+				wxLogError("Node 'data' does not have 'format' tag.");
 				continue;
 			}
 
@@ -247,20 +247,18 @@ void ClientVersion::loadVersion(pugi::xml_node versionNode)
 				client_data.datFormat = DAT_FORMAT_1050;
 			} else if(format == "10.57") {
 				client_data.datFormat = DAT_FORMAT_1057;
-			} else if (format == "10.92") {
-				client_data.datFormat = DAT_FORMAT_1092;
 			} else {
-				wxLogError(wxT("Node 'data' 'format' is invalid (7.4, 7.55, 7.8, 8.6, 9.6, 10.10, 10.50, 10.57 and 10.92 are supported)"));
+				wxLogError("Node 'data' 'format' is invalid (7.4, 7.55, 7.8, 8.6, 9.6, 10.10, 10.50, 10.57 are supported)");
 				continue;
 			}
 
 			if(!(attribute = childNode.attribute("dat")) || !wxString(attribute.as_string(), wxConvUTF8).ToULong((unsigned long*)&client_data.datSignature, 16)) {
-				wxLogError(wxT("Node 'data' 'dat' tag is not hex-formatted."));
+				wxLogError("Node 'data' 'dat' tag is not hex-formatted.");
 				continue;
 			}
 
 			if(!(attribute = childNode.attribute("spr")) || !wxString(attribute.as_string(), wxConvUTF8).ToULong((unsigned long*)&client_data.sprSignature, 16)) {
-				wxLogError(wxT("Node 'data' 'spr' tag is not hex-formatted."));
+				wxLogError("Node 'data' 'spr' tag is not hex-formatted.");
 				continue;
 			}
 
@@ -269,7 +267,7 @@ void ClientVersion::loadVersion(pugi::xml_node versionNode)
 	}
 
 	if(client_versions[version->getID()]) {
-		wxLogError(wxT("Duplicate version id ") + std::to_string(version->getID()) + wxT(", discarding version '") + version->name + wxT("'."));
+		wxLogError("Duplicate version id %i, discarding version '%s'.", version->getID(), version->name);
 		delete version;
 		return;
 	}
@@ -306,14 +304,14 @@ void ClientVersion::loadVersionExtensions(pugi::xml_node versionNode)
 		ClientVersion* toVersion = get(to);
 
 		if(!fromVersion && !toVersion) {
-			wxLogError(wxT("Unknown client extension data."));
+			wxLogError("Unknown client extension data.");
 			continue;
 		}
-			
+
 		if(!fromVersion) {
 			fromVersion = client_versions.begin()->second;
 		}
-		
+
 		if(!toVersion) {
 			toVersion = client_versions.rbegin()->second;
 		}
@@ -342,7 +340,7 @@ void ClientVersion::saveVersions()
 	}
 	std::ostringstream out;
 	json::write(vers_obj, out);
-	settings.setString(Config::TIBIA_DATA_DIRS, out.str());
+	g_settings.setString(Config::ASSETS_DATA_DIRS, out.str());
 }
 
 // Client version class
@@ -411,15 +409,15 @@ ClientVersion* ClientVersion::getLatestVersion()
 
 FileName ClientVersion::getDataPath() const
 {
-	wxString basePath = gui.GetDataDirectory();
+	wxString basePath = g_gui.GetDataDirectory();
 	if(!wxFileName(basePath).DirExists())
-		basePath = gui.getFoundDataDirectory();
+		basePath = g_gui.getFoundDataDirectory();
 	return basePath + data_path + FileName::GetPathSeparator();
 }
 
 FileName ClientVersion::getLocalDataPath() const
 {
-	FileName f = gui.GetLocalDataDirectory() + data_path + FileName::GetPathSeparator();
+	FileName f = g_gui.GetLocalDataDirectory() + data_path + FileName::GetPathSeparator();
 	f.Mkdir(0755, wxPATH_MKDIR_FULL);
 	return f;
 }
@@ -429,21 +427,21 @@ bool ClientVersion::hasValidPaths() const
 	if(!client_path.DirExists()) {
 		return false;
 	}
-	
-	FileName dat_path = client_path.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + wxT("Tibia.dat");
-	FileName spr_path = client_path.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + wxT("Tibia.spr");
+
+	FileName dat_path = client_path.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + wxString(ASSETS_NAME) + ".dat";
+	FileName spr_path = client_path.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + wxString(ASSETS_NAME) + ".spr";
 	if(!dat_path.FileExists() || !spr_path.FileExists()) {
 		return false;
 	}
 
-	if(!settings.getInteger(Config::CHECK_SIGNATURES)) {
+	if(!g_settings.getInteger(Config::CHECK_SIGNATURES)) {
 		return true;
 	}
 
 	// Peek the version of the files
 	FileReadHandle dat_file(static_cast<const char*>(dat_path.GetFullPath().mb_str()));
 	if(!dat_file.isOk()) {
-		wxLogError(wxT("Could not open Tibia.dat."));
+		wxLogError("Could not open metadata file.");
 		return false;
 	}
 
@@ -453,7 +451,7 @@ bool ClientVersion::hasValidPaths() const
 
 	FileReadHandle spr_file(static_cast<const char*>(spr_path.GetFullPath().mb_str()));
 	if(!spr_file.isOk()) {
-		wxLogError(wxT("Could not open Tibia.spr."));
+		wxLogError("Could not open sprites file.");
 		return false;
 	}
 
@@ -467,9 +465,9 @@ bool ClientVersion::hasValidPaths() const
 		}
 	}
 
-	wxString message = wxT("Signatures are incorrect.\n");
-	message << wxT("Dat signature: %X\n");
-	message << wxT("Spr signature: %X");
+	wxString message = "Signatures are incorrect.\n";
+	message << "Metadata signature: %X\n";
+	message << "Sprites signature: %X";
 	wxLogError(wxString::Format(message, datSignature, sprSignature));
 	return false;
 }
@@ -477,16 +475,13 @@ bool ClientVersion::hasValidPaths() const
 bool ClientVersion::loadValidPaths()
 {
 	while(!hasValidPaths()) {
-		gui.PopupDialog(
-			wxT("Error"),
-			wxT("Could not locate Tibia.dat and/or Tibia.spr, please navigate to your Tibia ") +
-				name + wxT(" installation folder."),
+		g_gui.PopupDialog(
+			"Error",
+			"Could not locate metadata and/or sprite files, please navigate to your client assets " + name + " installation folder.",
 			wxOK);
 
-		wxString dirHelpText(wxT("Select Tibia "));
-		dirHelpText << name << " directory.";
-
-		wxDirDialog file_dlg(nullptr, dirHelpText, wxT(""), wxDD_DIR_MUST_EXIST);
+		wxString dirHelpText("Select assets directory.");
+		wxDirDialog file_dlg(nullptr, dirHelpText, "", wxDD_DIR_MUST_EXIST);
 		int ok = file_dlg.ShowModal();
 		if(ok == wxID_CANCEL)
 			return false;

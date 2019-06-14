@@ -8,6 +8,7 @@
 
 #include "old_properties_window.h"
 #include "properties_window.h"
+#include "find_item_window.h"
 #include "gui.h"
 #include "complexitem.h"
 #include "map.h"
@@ -70,32 +71,23 @@ void ContainerItemButton::OnMouseRightRelease(wxMouseEvent& WXUNUSED(event))
 
 void ContainerItemButton::OnAddItem(wxCommandEvent& WXUNUSED(event))
 {
-	FindItemDialog* itemDialog = newd FindItemDialog(GetParent(), wxT("Choose Item to add"));
-	itemDialog->setCondition([](const ItemType& itemType) -> bool {
-		return itemType.pickupable;
-	});
+	FindItemDialog dialog(GetParent(), "Choose Item to add", true);
 
-	int32_t id = itemDialog->ShowModal();
-	itemDialog->Destroy();
+	if(dialog.ShowModal() == wxID_OK) {
+		Container* container = getParentContainer();
+		ItemVector& itemVector = container->getVector();
 
-	if(id == 0) {
-		return;
+		Item* item = Item::Create(dialog.getResultID());
+		if(index < itemVector.size())
+			itemVector.insert(itemVector.begin() + index, item);
+		else
+			itemVector.push_back(item);
+
+		ObjectPropertiesWindowBase* propertyWindow = getParentContainerWindow();
+		if(propertyWindow)
+			propertyWindow->Update();
 	}
-
-	Container* container = getParentContainer();
-	ItemVector& itemVector = container->getVector();
-
-	Item* item = Item::Create(id);
-	if(index < itemVector.size()) {
-		itemVector.insert(itemVector.begin() + index, item);
-	} else {
-		itemVector.push_back(item);
-	}
-	
-	ObjectPropertiesWindowBase* propertyWindow = getParentContainerWindow();
-	if(propertyWindow) {
-		propertyWindow->Update();
-	}
+	dialog.Destroy();
 }
 
 void ContainerItemButton::OnEditItem(wxCommandEvent& WXUNUSED(event))
@@ -127,9 +119,9 @@ void ContainerItemButton::OnEditItem(wxCommandEvent& WXUNUSED(event))
 void ContainerItemButton::OnRemoveItem(wxCommandEvent& WXUNUSED(event))
 {
 	ASSERT(edit_item);
-	int32_t ret = gui.PopupDialog(GetParent(),
-		wxT("Remove Item"),
-		wxT("Are you sure you want to remove this item from the container?"),
+	int32_t ret = g_gui.PopupDialog(GetParent(),
+		"Remove Item",
+		"Are you sure you want to remove this item from the container?",
 		wxYES | wxNO
 	);
 
@@ -151,7 +143,7 @@ void ContainerItemButton::OnRemoveItem(wxCommandEvent& WXUNUSED(event))
 
 	itemVector.erase(it);
 	delete edit_item;
-	
+
 	ObjectPropertiesWindowBase* propertyWindow = getParentContainerWindow();
 	if(propertyWindow) {
 		propertyWindow->Update();
@@ -189,7 +181,7 @@ Container* ContainerItemButton::getParentContainer()
 }
 
 // ContainerItemPopupMenu
-ContainerItemPopupMenu::ContainerItemPopupMenu() : wxMenu(wxT(""))
+ContainerItemPopupMenu::ContainerItemPopupMenu() : wxMenu("")
 {
 	////
 }
@@ -210,11 +202,11 @@ void ContainerItemPopupMenu::Update(ContainerItemButton* btn)
 
 	wxMenuItem* addItem = nullptr;
 	if(btn->edit_item) {
-		Append( CONTAINER_POPUP_MENU_EDIT, wxT("&Edit Item"), wxT("Open the properties menu for this item"));
-		addItem = Append( CONTAINER_POPUP_MENU_ADD, wxT("&Add Item"), wxT("Add a newd item to the container"));
-		Append( CONTAINER_POPUP_MENU_REMOVE, wxT("&Remove Item"), wxT("Remove this item from the container"));
+		Append( CONTAINER_POPUP_MENU_EDIT, "&Edit Item", "Open the properties menu for this item");
+		addItem = Append( CONTAINER_POPUP_MENU_ADD, "&Add Item", "Add a newd item to the container");
+		Append( CONTAINER_POPUP_MENU_REMOVE, "&Remove Item", "Remove this item from the container");
 	} else {
-		addItem = Append( CONTAINER_POPUP_MENU_ADD, wxT("&Add Item"), wxT("Add a newd item to the container"));
+		addItem = Append( CONTAINER_POPUP_MENU_ADD, "&Add Item", "Add a newd item to the container");
 	}
 
 	Container* parentContainer = btn->getParentContainer();

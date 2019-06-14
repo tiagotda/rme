@@ -6,15 +6,19 @@
 //=============================================================================
 // Wallbrush, for drawing walls
 
-class WallBrush : public TerrainBrush {
+class WallBrush : public TerrainBrush
+{
 public:
 	static void init();
 
 	WallBrush();
 	virtual ~WallBrush();
 
+	bool isWall() const { return true; }
+	WallBrush* asWall() { return static_cast<WallBrush*>(this); }
+
 	virtual bool load(pugi::xml_node node, wxArrayString& warnings);
-	
+
 	virtual bool canDraw(BaseMap* map, const Position& position) const {return true;}
 
 	// Draw to the target tile
@@ -28,9 +32,10 @@ public:
 	// If the specified wall item is part of this wall
 	bool hasWall(Item* item);
 	::DoorType getDoorTypeFromID(uint16_t id);
-	
-	virtual bool canSmear() const {return false;}
-	virtual bool canDrag() const {return true;}
+
+	virtual bool canSmear() const { return false; }
+	virtual bool canDrag() const { return true; }
+
 protected:
 	struct WallType {
 		int chance;
@@ -51,6 +56,7 @@ protected:
 	WallBrush* redirect_to;
 
 	friend class DoorBrush;
+
 public:
 	static uint32_t full_border_types[16];
 	static uint32_t half_border_types[16];
@@ -59,11 +65,15 @@ public:
 //=============================================================================
 // Wall decoration brush, for drawing decoration on walls
 
-class WallDecorationBrush : public WallBrush {
+class WallDecorationBrush : public WallBrush
+{
 public:
 	WallDecorationBrush();
 	virtual ~WallDecorationBrush();
-	
+
+	bool isWallDecoration() const { return true; }
+	WallDecorationBrush* asWallDecoration() { return static_cast<WallDecorationBrush*>(this); }
+
 	// We use the exact same loading algorithm as normal walls
 
 	virtual void draw(BaseMap* map, Tile* tile, void* parameter);

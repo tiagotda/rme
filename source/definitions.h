@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@
 // Version info
 // xxyyzzt (major, minor, subversion)
 #define __RME_VERSION_MAJOR__      3
-#define __RME_VERSION_MINOR__      2
+#define __RME_VERSION_MINOR__      6
 #define __RME_SUBVERSION__         0
 
 #define __LIVE_NET_VERSION__       5
@@ -40,14 +40,15 @@
 
 #ifdef __EXPERIMENTAL__
 #   define __RME_VERSION__ std::string(i2s(__RME_VERSION_MAJOR__) + "." + i2s(__RME_VERSION_MINOR__) + + " BETA")
-#   define __W_RME_VERSION__ (wxString() << __RME_VERSION_MAJOR__ << wxT(".") << __RME_VERSION_MINOR__ << wxT(" BETA"))
+#   define __W_RME_VERSION__ (wxString() << __RME_VERSION_MAJOR__ << "." << __RME_VERSION_MINOR__ << " BETA")
 #else
 #   define __RME_VERSION__ std::string(i2s(__RME_VERSION_MAJOR__) + "." + i2s(__RME_VERSION_MINOR__))
-#   define __W_RME_VERSION__ (wxString() << __RME_VERSION_MAJOR__ << wxT(".") << __RME_VERSION_MINOR__)
+#   define __W_RME_VERSION__ (wxString() << __RME_VERSION_MAJOR__ << "." << __RME_VERSION_MINOR__)
 #endif
 // OS
 
 #define OTGZ_SUPPORT 1
+#define ASSETS_NAME "Tibia"
 
 #ifdef __VISUALC__
 #pragma warning(disable:4996) // Stupid MSVC complaining 'bout "unsafe" functions
@@ -116,11 +117,21 @@
 // The size of the tile in pixels
 #define TILE_SIZE 32
 
+// The default size of sprites
+#define SPRITE_PIXELS 32
+#define SPRITE_PIXELS_SIZE SPRITE_PIXELS * SPRITE_PIXELS
+
 // The sea layer
 #define GROUND_LAYER 7
 
 #define CLIENT_MAP_WIDTH 18
 #define CLIENT_MAP_HEIGHT 14
+
+#define MAP_LOAD_FILE_WILDCARD_OTGZ "OpenTibia Binary Map (*.otbm;*.otgz)|*.otbm;*.otgz"
+#define MAP_SAVE_FILE_WILDCARD_OTGZ "OpenTibia Binary Map (*.otbm)|*.otbm|Compressed OpenTibia Binary Map (*.otgz)|*.otgz"
+
+#define MAP_LOAD_FILE_WILDCARD "OpenTibia Binary Map (*.otbm)|*.otbm"
+#define MAP_SAVE_FILE_WILDCARD "OpenTibia Binary Map (*.otbm)|*.otbm"
 
 // wxString conversions
 #define nstr(str) std::string((const char*)(str.mb_str(wxConvUTF8)))
@@ -136,7 +147,7 @@
 			return static_cast<Type>((++type) - 1); \
 		} \
 	}
-    
+
 #define IMPLEMENT_DECREMENT_OP(Type) \
 	namespace { \
 		Type& operator--(Type& type) { \

@@ -38,7 +38,7 @@ MapTab::MapTab(const MapTab* other) :
 	FitToMap();
 	int x, y;
 	other->GetCanvas()->GetScreenCenter(&x, &y);
-	CenterOnPosition(Position(x, y, other->GetCanvas()->GetFloor()));
+	SetScreenCenterPosition(Position(x, y, other->GetCanvas()->GetFloor()));
 }
 
 MapTab::~MapTab()
@@ -73,7 +73,7 @@ MapWindow* MapTab::GetView() const
 wxString MapTab::GetTitle() const
 {
 	wxString ss;
-	ss << wxstr(iref->editor->map.getName()) << (iref->editor->map.hasChanged()? wxT("*"): wxT(""));
+	ss << wxstr(iref->editor->map.getName()) << (iref->editor->map.hasChanged()? "*": "");
 	return ss;
 }
 

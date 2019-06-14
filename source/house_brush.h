@@ -9,10 +9,15 @@
 // Should be deleted by the owning palette
 
 // Forward declaration
-class HouseBrush : public Brush {
+class HouseBrush : public Brush
+{
 public:
 	HouseBrush();
 	virtual ~HouseBrush();
+
+	bool isHouse() const { return true; }
+	HouseBrush* asHouse() { return static_cast<HouseBrush*>(this); }
+
 	// Not used
 	virtual bool load(pugi::xml_node node, wxArrayString& warnings) {return true;}
 
@@ -26,10 +31,11 @@ public:
 	virtual bool canDrag() const {return true;}
 
 	void setHouse(House* house);
-	
+
 	uint32_t getHouseID() const;
-	virtual int getLookID() const {return 0;} // We don't have a graphic
-	virtual std::string getName() const {return "House Brush";}
+	virtual int getLookID() const { return 0; } // We don't have a graphic
+	virtual std::string getName() const { return "House Brush"; }
+
 protected:
 	House* draw_house;
 };

@@ -15,7 +15,7 @@
 RAWBrush::RAWBrush(uint16_t itemid) :
 	Brush()
 {
-	ItemType& it = item_db[itemid];
+	ItemType& it = g_items[itemid];
 	if(it.id == 0)
 		itemtype = nullptr;
 	else
@@ -36,14 +36,20 @@ int RAWBrush::getLookID() const
 
 uint16_t RAWBrush::getItemID() const
 {
-    return itemtype->id;
+	return itemtype->id;
 }
 
 std::string RAWBrush::getName() const
 {
-	if(itemtype)
-		return i2s(itemtype->id) + " - " + itemtype->name + itemtype->editorsuffix;
-	return "RAWBrush";
+	if(!itemtype)
+		return "RAWBrush";
+
+	if(itemtype->hookSouth)
+		return i2s(itemtype->id) + " - " + itemtype->name + " (Hook South)";
+	else if(itemtype->hookEast)
+		return i2s(itemtype->id) + " - " + itemtype->name + " (Hook East)";
+	
+	return i2s(itemtype->id) + " - " + itemtype->name + itemtype->editorsuffix;
 }
 
 void RAWBrush::undraw(BaseMap* map, Tile* tile)
@@ -68,7 +74,7 @@ void RAWBrush::draw(BaseMap* map, Tile* tile, void* parameter)
 	if(!itemtype) return;
 
 	bool b = parameter? *reinterpret_cast<bool*>(parameter) : false;
-	if((settings.getInteger(Config::RAW_LIKE_SIMONE) && !b) && itemtype->alwaysOnBottom && itemtype->alwaysOnTopOrder == 2) {
+	if((g_settings.getInteger(Config::RAW_LIKE_SIMONE) && !b) && itemtype->alwaysOnBottom && itemtype->alwaysOnTopOrder == 2) {
 		for(ItemVector::iterator iter = tile->items.begin(); iter != tile->items.end();) {
 			Item* item = *iter;
 			if(item->getTopOrder() == itemtype->alwaysOnTopOrder) {

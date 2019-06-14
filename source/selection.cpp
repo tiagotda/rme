@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ Selection::~Selection()
 Position Selection::minPosition() const
 {
 	Position minPos(0x10000, 0x10000, 0x10);
-	for(TileVector::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile) {
+	for(TileSet::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile) {
 		Position pos((*tile)->getPosition());
 		if(minPos.x > pos.x)
 			minPos.x = pos.x;
@@ -59,7 +59,7 @@ Position Selection::minPosition() const
 Position Selection::maxPosition() const
 {
 	Position maxPos(0, 0, 0);
-	for(TileVector::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile) {
+	for(TileSet::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile) {
 		Position pos((*tile)->getPosition());
 		if(maxPos.x < pos.x)
 			maxPos.x = pos.x;
@@ -84,7 +84,7 @@ void Selection::add(Tile* tile, Item* item)
 	Tile* new_tile = tile->deepCopy(editor.map);
 	item->deselect();
 
-	if(settings.getInteger(Config::BORDER_IS_GROUND))
+	if(g_settings.getInteger(Config::BORDER_IS_GROUND))
 		if(item->isBorder())
 			new_tile->selectGround();
 
@@ -144,7 +144,7 @@ void Selection::remove(Tile* tile, Item* item)
 	item->deselect();
 	Tile* new_tile = tile->deepCopy(editor.map);
 	if(tmp) item->select();
-	if(item->isBorder() && settings.getInteger(Config::BORDER_IS_GROUND)) new_tile->deselectGround();
+	if(item->isBorder() && g_settings.getInteger(Config::BORDER_IS_GROUND)) new_tile->deselectGround();
 
 	subsession->addChange(newd Change(new_tile));
 }
@@ -191,53 +191,25 @@ void Selection::addInternal(Tile* tile)
 {
 	ASSERT(tile);
 
-	tiles.push_back(tile);
-	erase_iterator = tiles.begin();
+	tiles.insert(tile);
 }
 
 void Selection::removeInternal(Tile* tile)
 {
 	ASSERT(tile);
-#ifdef __DEBUG_MODE__
-	TileVector::iterator erase_begin = erase_iterator;
-#endif
-	if(tiles.size() == 0)
-		return;
-
-	TileVector::iterator end_iter = tiles.end();
-	do {
-		if(erase_iterator == end_iter) {
-			erase_iterator = tiles.begin();
-		}
-		if(*erase_iterator == tile) {
-			// Swap & pop trick
-			if(*erase_iterator == tiles.back()) {
-				tiles.pop_back();
-				erase_iterator = tiles.begin();
-			} else {
-				std::swap(*erase_iterator, tiles.back());
-				tiles.pop_back();
-				erase_iterator = tiles.begin() + (erase_iterator - tiles.begin());
-			}
-			return;
-		}
-		++erase_iterator;
-#ifdef __DEBUG_MODE__
-		ASSERT(/* This shouldn't happend*/ erase_iterator != erase_begin);
-#endif
-	} while(true);
+	tiles.erase(tile);
 }
 
 void Selection::clear()
 {
 	if(session) {
-		for(TileVector::iterator it = tiles.begin(); it != tiles.end(); it++) {
+		for(TileSet::iterator it = tiles.begin(); it != tiles.end(); it++) {
 			Tile* new_tile = (*it)->deepCopy(editor.map);
 			new_tile->deselect();
 			subsession->addChange(newd Change(new_tile));
 		}
 	} else {
-		for(TileVector::iterator it = tiles.begin(); it != tiles.end(); it++) {
+		for(TileSet::iterator it = tiles.begin(); it != tiles.end(); it++) {
 			(*it)->deselect();
 		}
 		tiles.clear();
@@ -254,13 +226,11 @@ void Selection::start(SessionFlags flags)
 		}
 		subsession = editor.actionQueue->createAction(ACTION_SELECT);
 	}
-	erase_iterator = tiles.begin();
 	busy = true;
 }
 
 void Selection::commit()
 {
-	erase_iterator = tiles.begin();
 	if(session) {
 		ASSERT(subsession);
 		// We need to step out of the session before we do the action, else peril awaits us!
@@ -278,7 +248,6 @@ void Selection::commit()
 
 void Selection::finish(SessionFlags flags)
 {
-	erase_iterator = tiles.begin();
 	if(!(flags & INTERNAL)) {
 		if(flags & SUBTHREAD) {
 			ASSERT(subsession);
@@ -305,11 +274,11 @@ void Selection::updateSelectionCount()
 	if(size() > 0) {
 		wxString ss;
 		if(size() == 1) {
-			ss << wxT("One tile selected.");
+			ss << "One tile selected.";
 		} else {
-			ss << size() << wxT(" tiles selected.");
+			ss << size() << " tiles selected.";
 		}
-		gui.SetStatusText(ss);
+		g_gui.SetStatusText(ss);
 	}
 }
 
@@ -359,7 +328,7 @@ wxThread::ExitCode SelectionThread::Entry()
 				selection.add(tile);
 			}
 		}
-		if(z <= GROUND_LAYER && settings.getInteger(Config::COMPENSATED_SELECT)) {
+		if(z <= GROUND_LAYER && g_settings.getInteger(Config::COMPENSATED_SELECT)) {
 			++start.x; ++start.y;
 			++end.x; ++end.y;
 		}

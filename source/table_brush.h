@@ -11,9 +11,12 @@ class TableBrush : public Brush
 {
 public:
 	static void init();
-	
+
 	TableBrush();
 	virtual ~TableBrush();
+
+	bool isTable() const { return true; }
+	TableBrush* asTable() { return static_cast<TableBrush*>(this); }
 
 	virtual bool load(pugi::xml_node node, wxArrayString& warnings);
 
@@ -28,7 +31,8 @@ public:
 	virtual std::string getName() const { return name; }
 	virtual void setName(const std::string& newName) { name = newName; }
 
-	virtual bool needBorders() const {return true;}
+	virtual bool needBorders() const { return true; }
+
 protected:
 	struct TableType
 	{

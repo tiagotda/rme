@@ -46,7 +46,7 @@
 #include "gui.h"
 #include "pugicast.h"
 
-Brushes brushes;
+Brushes g_brushes;
 
 Brushes::Brushes()
 {
@@ -73,23 +73,23 @@ void Brushes::clear()
 
 void Brushes::init()
 {
-	addBrush(gui.optional_brush = newd OptionalBorderBrush());
-	addBrush(gui.eraser = newd EraserBrush());
-	addBrush(gui.spawn_brush = newd SpawnBrush());
-	addBrush(gui.normal_door_brush = newd DoorBrush(WALL_DOOR_NORMAL));
-	addBrush(gui.locked_door_brush = newd DoorBrush(WALL_DOOR_LOCKED));
-	addBrush(gui.magic_door_brush = newd DoorBrush(WALL_DOOR_MAGIC));
-	addBrush(gui.quest_door_brush = newd DoorBrush(WALL_DOOR_QUEST));
-	addBrush(gui.hatch_door_brush = newd DoorBrush(WALL_HATCH_WINDOW));
-	addBrush(gui.window_door_brush = newd DoorBrush(WALL_WINDOW));
-	addBrush(gui.house_brush = newd HouseBrush());
-	addBrush(gui.house_exit_brush = newd HouseExitBrush());
-	addBrush(gui.waypoint_brush = newd WaypointBrush());
+	addBrush(g_gui.optional_brush = newd OptionalBorderBrush());
+	addBrush(g_gui.eraser = newd EraserBrush());
+	addBrush(g_gui.spawn_brush = newd SpawnBrush());
+	addBrush(g_gui.normal_door_brush = newd DoorBrush(WALL_DOOR_NORMAL));
+	addBrush(g_gui.locked_door_brush = newd DoorBrush(WALL_DOOR_LOCKED));
+	addBrush(g_gui.magic_door_brush = newd DoorBrush(WALL_DOOR_MAGIC));
+	addBrush(g_gui.quest_door_brush = newd DoorBrush(WALL_DOOR_QUEST));
+	addBrush(g_gui.hatch_door_brush = newd DoorBrush(WALL_HATCH_WINDOW));
+	addBrush(g_gui.window_door_brush = newd DoorBrush(WALL_WINDOW));
+	addBrush(g_gui.house_brush = newd HouseBrush());
+	addBrush(g_gui.house_exit_brush = newd HouseExitBrush());
+	addBrush(g_gui.waypoint_brush = newd WaypointBrush());
 
-	addBrush(gui.pz_brush = newd FlagBrush(TILESTATE_PROTECTIONZONE));
-	addBrush(gui.rook_brush = newd FlagBrush(TILESTATE_NOPVP));
-	addBrush(gui.nolog_brush = newd FlagBrush(TILESTATE_NOLOGOUT));
-	addBrush(gui.pvp_brush = newd FlagBrush(TILESTATE_PVPZONE));
+	addBrush(g_gui.pz_brush = newd FlagBrush(TILESTATE_PROTECTIONZONE));
+	addBrush(g_gui.rook_brush = newd FlagBrush(TILESTATE_NOPVP));
+	addBrush(g_gui.nolog_brush = newd FlagBrush(TILESTATE_NOLOGOUT));
+	addBrush(g_gui.pvp_brush = newd FlagBrush(TILESTATE_PVPZONE));
 
 	GroundBrush::init();
 	WallBrush::init();
@@ -101,20 +101,20 @@ bool Brushes::unserializeBrush(pugi::xml_node node, wxArrayString& warnings)
 {
 	pugi::xml_attribute attribute;
 	if(!(attribute = node.attribute("name"))) {
-		warnings.push_back(wxT("Brush node without name."));
+		warnings.push_back("Brush node without name.");
 		return false;
 	}
 
 	const std::string& brushName = attribute.as_string();
 	if(brushName == "all" || brushName == "none") {
-		warnings.push_back(wxString(wxT("Using reserved brushname \"")) << wxstr(brushName) << wxT("\"."));
+		warnings.push_back(wxString("Using reserved brushname \"") << wxstr(brushName) << "\".");
 		return false;
 	}
 
 	Brush* brush = getBrush(brushName);
 	if(!brush) {
 		if(!(attribute = node.attribute("type"))) {
-			warnings.push_back(wxT("Couldn't read brush type"));
+			warnings.push_back("Couldn't read brush type");
 			return false;
 		}
 
@@ -132,7 +132,7 @@ bool Brushes::unserializeBrush(pugi::xml_node node, wxArrayString& warnings)
 		} else if(brushType == "doodad") {
 			brush = newd DoodadBrush();
 		} else {
-			warnings.push_back(wxString(wxT("Unknown brush type ")) << wxstr(brushType));
+			warnings.push_back(wxString("Unknown brush type ") << wxstr(brushType));
 			return false;
 		}
 
@@ -149,12 +149,12 @@ bool Brushes::unserializeBrush(pugi::xml_node node, wxArrayString& warnings)
 	brush->load(node, subWarnings);
 
 	if(!subWarnings.empty()) {
-		warnings.push_back(wxString(wxT("Errors while loading brush \"")) << wxstr(brush->getName()) << wxT("\""));
+		warnings.push_back(wxString("Errors while loading brush \"") << wxstr(brush->getName()) << "\"");
 		warnings.insert(warnings.end(), subWarnings.begin(), subWarnings.end());
 	}
 
 	if(brush->getName() == "all" || brush->getName() == "none") {
-		warnings.push_back(wxString(wxT("Using reserved brushname '")) << wxstr(brush->getName()) << wxT("'."));
+		warnings.push_back(wxString("Using reserved brushname '") << wxstr(brush->getName()) << "'.");
 		delete brush;
 		return false;
 	}
@@ -162,7 +162,7 @@ bool Brushes::unserializeBrush(pugi::xml_node node, wxArrayString& warnings)
 	Brush* otherBrush = getBrush(brush->getName());
 	if(otherBrush) {
 		if(otherBrush != brush) {
-			warnings.push_back(wxString(wxT("Duplicate brush name ")) << wxstr(brush->getName()) << wxT(". Undefined behaviour may ensue."));
+			warnings.push_back(wxString("Duplicate brush name ") << wxstr(brush->getName()) << ". Undefined behaviour may ensue.");
 		} else {
 			// Don't insert
 			return true;
@@ -177,13 +177,13 @@ bool Brushes::unserializeBorder(pugi::xml_node node, wxArrayString& warnings)
 {
 	pugi::xml_attribute attribute = node.attribute("id");
 	if(!attribute) {
-		warnings.push_back(wxT("Couldn't read border id node"));
+		warnings.push_back("Couldn't read border id node");
 		return false;
 	}
 
 	int32_t id = pugi::cast<int32_t>(attribute.value());
 	if(borders[id]) {
-		warnings.push_back(wxT("Border ID ") + std::to_string(id) + wxT(" already exists"));
+		warnings.push_back("Border ID " + std::to_string(id) + " already exists");
 		return false;
 	}
 
@@ -366,7 +366,7 @@ void DoorBrush::switchDoor(Item* item)
 		WallBrush::DoorType& dt = *iter;
 		if(dt.type == doortype) {
 			ASSERT(dt.id);
-			ItemType& it = item_db[dt.id];
+			ItemType& it = g_items[dt.id];
 			ASSERT(it.id != 0);
 
 			if(it.isOpen == new_open) {
@@ -412,7 +412,7 @@ bool DoorBrush::canDraw(BaseMap* map, const Position& position) const
 			WallBrush::DoorType& dt = *iter;
 			if(dt.type == doortype) {
 				ASSERT(dt.id);
-				ItemType& it = item_db[dt.id];
+				ItemType& it = g_items[dt.id];
 				ASSERT(it.id != 0);
 
 				if(it.isOpen == open) {
@@ -441,7 +441,7 @@ void DoorBrush::undraw(BaseMap* map, Tile* tile)
 		Item* item = *it;
 		if(item->isBrushDoor()) {
 			item->getWallBrush()->draw(map, tile, nullptr);
-			if(settings.getInteger(Config::USE_AUTOMAGIC)) {
+			if(g_settings.getInteger(Config::USE_AUTOMAGIC)) {
 				tile->wallize(map);
 			}
 			return;
@@ -488,7 +488,7 @@ void DoorBrush::draw(BaseMap* map, Tile* tile, void* parameter)
 				WallBrush::DoorType& dt = *iter;
 				if(dt.type == doortype) {
 					ASSERT(dt.id);
-					ItemType& it = item_db[dt.id];
+					ItemType& it = g_items[dt.id];
 					ASSERT(it.id != 0);
 
 					if(it.isOpen == open) {
@@ -515,7 +515,7 @@ void DoorBrush::draw(BaseMap* map, Tile* tile, void* parameter)
 			item = transformItem(item, discarded_id, tile);
 		}
 
-		if(settings.getInteger(Config::AUTO_ASSIGN_DOORID) && tile->isHouseTile()) {
+		if(g_settings.getInteger(Config::AUTO_ASSIGN_DOORID) && tile->isHouseTile()) {
 			Map* mmap = dynamic_cast<Map*>(map);
 			Door* door = dynamic_cast<Door*>(item);
 			if(mmap && door) {
@@ -549,16 +549,14 @@ void DoorBrush::draw(BaseMap* map, Tile* tile, void* parameter)
 
 			item = *item_iter;
 			if(item->isWall()) {
-				if(WallDecorationBrush* wdb = dynamic_cast<WallDecorationBrush*>(item->getWallBrush())) {
+				WallBrush* brush = item->getWallBrush();
+				if(brush && brush->isWallDecoration()) {
 					// We got a decoration!
-					for(std::vector<WallBrush::DoorType>::iterator iter = wdb->door_items[wall_alignment].begin();
-							iter != wdb->door_items[wall_alignment].end();
-							++iter)
-					{
-						WallBrush::DoorType& dt = *iter;
+					for (std::vector<WallBrush::DoorType>::iterator it = brush->door_items[wall_alignment].begin(); it != brush->door_items[wall_alignment].end(); ++it) {
+						WallBrush::DoorType& dt = (*it);
 						if(dt.type == doortype) {
 							ASSERT(dt.id);
-							ItemType& it = item_db[dt.id];
+							ItemType& it = g_items[dt.id];
 							ASSERT(it.id != 0);
 
 							if(it.isOpen == open) {

@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -38,7 +38,8 @@ Tile::Tile(int x, int y, int z) :
 	spawn(nullptr),
 	house_id(0),
 	mapflags(0),
-	statflags(0)
+	statflags(0),
+	minimapColor(INVALID_MINIMAP_COLOR)
 {
 	////
 }
@@ -50,7 +51,8 @@ Tile::Tile(TileLocation& loc) :
 	spawn(nullptr),
 	house_id(0),
 	mapflags(0),
-	statflags(0)
+	statflags(0),
+	minimapColor(INVALID_MINIMAP_COLOR)
 {
 	////
 }
@@ -82,7 +84,7 @@ Tile* Tile::deepCopy(BaseMap& map)
 	it = items.begin();
 	while(it != items.end()) {
 		copy->items.push_back((*it)->deepCopy());
-		++it; 
+		++it;
 	}
 
 	return copy;
@@ -156,7 +158,7 @@ void Tile::merge(Tile* other) {
 	it = other->items.begin();
 	while(it != other->items.end()) {
 		addItem(*it);
-		++it; 
+		++it;
 	}
 	other->items.clear();
 }
@@ -200,7 +202,7 @@ void Tile::addItem(Item* item)
 	}
 
 	ItemVector::iterator it;
-	
+
 	uint16_t gid = item->getGroundEquivalent();
 	if(gid != 0) {
 		delete ground;
@@ -226,7 +228,7 @@ void Tile::addItem(Item* item)
 			it = items.end();
 		}
 	}
-	
+
 	items.insert(it, item);
 
 	if(item->isSelected()) {
@@ -248,7 +250,7 @@ void Tile::select()
 		(*it)->select();
 		++it;
 	}
-	
+
 	statflags |= TILESTATE_SELECTED;
 }
 
@@ -313,7 +315,7 @@ ItemVector Tile::popSelectedItems()
 ItemVector Tile::getSelectedItems()
 {
 	ItemVector selected_items;
-	
+
 	if(!isSelected()) return selected_items;
 
 	if(ground && ground->isSelected()) {
@@ -328,22 +330,27 @@ ItemVector Tile::getSelectedItems()
 			selected_items.push_back(*it);
 		} it++;
 	}
-	
+
 	return selected_items;
 }
 
 uint8_t Tile::getMiniMapColor() const
 {
+	if(minimapColor != INVALID_MINIMAP_COLOR)
+		return minimapColor;
+
 	for(ItemVector::const_reverse_iterator item_iter = items.rbegin(); item_iter != items.rend(); ++item_iter) {
 		if((*item_iter)->getMiniMapColor()) {
 			return (*item_iter)->getMiniMapColor();
 			break;
 		}
 	}
+
 	// check ground too
 	if(hasGround()) {
 		return ground->getMiniMapColor();
 	}
+
 	return 0;
 }
 
@@ -376,7 +383,7 @@ bool tilePositionVisualLessThan(const Tile* a, const Tile* b)
 void Tile::update()
 {
 	statflags &= TILESTATE_MODIFIED;
-	
+
 	if(spawn && spawn->isSelected()) {
 		statflags |= TILESTATE_SELECTED;
 	}
@@ -394,6 +401,9 @@ void Tile::update()
 		if(ground->getUniqueID() != 0) {
 			statflags |= TILESTATE_UNIQUE;
 		}
+		if(ground->getMiniMapColor() != 0) {
+			minimapColor = ground->getMiniMapColor();
+		}
 	}
 
 	ItemVector::const_iterator iter = items.begin();
@@ -405,9 +415,12 @@ void Tile::update()
 		if(i->getUniqueID() != 0) {
 			statflags |= TILESTATE_UNIQUE;
 		}
+		if(i->getMiniMapColor() != 0) {
+			minimapColor = i->getMiniMapColor();
+		}
 
-		ItemType& it = item_db[i->getID()];
-		if(it.blockSolid) {
+		ItemType& it = g_items[i->getID()];
+		if(it.unpassable) {
 			statflags |= TILESTATE_BLOCKING;
 		}
 		if(it.isOptionalBorder) {

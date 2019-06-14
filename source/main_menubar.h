@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -46,11 +46,17 @@ namespace MenuBar
 		REDO,
 		FIND_ITEM,
 		REPLACE_ITEM,
-		SEARCH_EVERYTHING,
-		SEARCH_UNIQUE,
-		SEARCH_ACTION,
-		SEARCH_CONTAINER,
-		SEARCH_WRITEABLE,
+		SEARCH_ON_MAP_EVERYTHING,
+		SEARCH_ON_MAP_UNIQUE,
+		SEARCH_ON_MAP_ACTION,
+		SEARCH_ON_MAP_CONTAINER,
+		SEARCH_ON_MAP_WRITEABLE,
+		SEARCH_ON_SELECTION_EVERYTHING,
+		SEARCH_ON_SELECTION_UNIQUE,
+		SEARCH_ON_SELECTION_ACTION,
+		SEARCH_ON_SELECTION_CONTAINER,
+		SEARCH_ON_SELECTION_WRITEABLE,
+		SEARCH_ON_SELECTION_ITEM,
 		SELECT_MODE_COMPENSATE,
 		SELECT_MODE_CURRENT,
 		SELECT_MODE_LOWER,
@@ -60,6 +66,7 @@ namespace MenuBar
 		BORDERIZE_MAP,
 		RANDOMIZE_SELECTION,
 		RANDOMIZE_MAP,
+		GOTO_PREVIOUS_POSITION,
 		GOTO_POSITION,
 		JUMP_TO_BRUSH,
 		JUMP_TO_ITEM_BRUSH,
@@ -78,6 +85,10 @@ namespace MenuBar
 		MAP_CLEAN_HOUSE_ITEMS,
 		MAP_PROPERTIES,
 		MAP_STATISTICS,
+		VIEW_TOOLBARS_BRUSHES,
+		VIEW_TOOLBARS_POSITION,
+		VIEW_TOOLBARS_SIZES,
+		VIEW_TOOLBARS_STANDARD,
 		NEW_VIEW,
 		TOGGLE_FULLSCREEN,
 		ZOOM_IN,
@@ -94,10 +105,14 @@ namespace MenuBar
 		SHOW_CREATURES,
 		SHOW_SPAWNS,
 		SHOW_SPECIAL,
+		SHOW_AS_MINIMAP,
 		SHOW_ONLY_COLORS,
 		SHOW_ONLY_MODIFIED,
 		SHOW_HOUSES,
 		SHOW_PATHING,
+		SHOW_TOOLTIPS,
+		SHOW_PREVIEW,
+		SHOW_WALL_HOOKS,
 		WIN_MINIMAP,
 		NEW_PALETTE,
 		TAKE_SCREENSHOT,
@@ -148,7 +163,7 @@ public:
 	// Turn on/off all buttons according to current editor state
 	void Update();
 	void UpdateFloorMenu(); // Only concerns the floor menu
-	
+
 	void AddRecentFile(FileName file);
 	void LoadRecentFiles();
 	void SaveRecentFiles();
@@ -187,6 +202,7 @@ public:
 	void OnRandomizeMap(wxCommandEvent& event);
 	void OnJumpToBrush(wxCommandEvent& event);
 	void OnJumpToItemBrush(wxCommandEvent& event);
+	void OnGotoPreviousPosition(wxCommandEvent& event);
 	void OnGotoPosition(wxCommandEvent& event);
 	void OnMapRemoveItems(wxCommandEvent& event);
 	void OnMapRemoveCorpses(wxCommandEvent& event);
@@ -200,11 +216,17 @@ public:
 	void OnPaste(wxCommandEvent& event);
 	void OnSearchForItem(wxCommandEvent& event);
 	void OnReplaceItem(wxCommandEvent& event);
-	void OnSearchForStuff(wxCommandEvent& event);
-	void OnSearchForUnique(wxCommandEvent& event);
-	void OnSearchForAction(wxCommandEvent& event);
-	void OnSearchForContainer(wxCommandEvent& event);
-	void OnSearchForWriteable(wxCommandEvent& event);
+	void OnSearchForStuffOnMap(wxCommandEvent& event);
+	void OnSearchForUniqueOnMap(wxCommandEvent& event);
+	void OnSearchForActionOnMap(wxCommandEvent& event);
+	void OnSearchForContainerOnMap(wxCommandEvent& event);
+	void OnSearchForWriteableOnMap(wxCommandEvent& event);
+	void OnSearchForStuffOnSelection(wxCommandEvent& event);
+	void OnSearchForUniqueOnSelection(wxCommandEvent& event);
+	void OnSearchForActionOnSelection(wxCommandEvent& event);
+	void OnSearchForContainerOnSelection(wxCommandEvent& event);
+	void OnSearchForWriteableOnSelection(wxCommandEvent& event);
+	void OnSearchForItemOnSelection(wxCommandEvent& event);
 
 	// Map menu
 	void OnMapEditTowns(wxCommandEvent& event);
@@ -216,6 +238,7 @@ public:
 	void OnMapStatistics(wxCommandEvent& event);
 
 	// View Menu
+	void OnToolbars(wxCommandEvent& event);
 	void OnNewView(wxCommandEvent& event);
 	void OnToggleFullscreen(wxCommandEvent& event);
 	void OnZoomIn(wxCommandEvent& event);
@@ -254,6 +277,7 @@ protected:
 	wxObject* LoadItem(pugi::xml_node node, wxMenu* parent, wxArrayString& warnings, wxString& error);
 	// Checks the items in the menus according to the settings (in config)
 	void LoadValues();
+	void SearchItems(bool unique, bool action, bool container, bool writable, bool onSelection = false);
 protected:
 
 	MainFrame* frame;
@@ -274,7 +298,7 @@ protected:
 
 namespace MenuBar
 {
-	struct Action	
+	struct Action
 	{
 		Action() : id(0), kind(wxITEM_NORMAL) {}
 		Action(std::string s, int id, wxItemKind kind, wxCommandEventFunction handler)

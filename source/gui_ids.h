@@ -5,12 +5,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //////////////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ enum EditorMode {
 };
 
 // Window IDs
-enum
+enum EditorActionID
 {
-    MAIN_FRAME_MENU = wxID_HIGHEST + 1,
+	MAIN_FRAME_MENU = wxID_HIGHEST + 1,
 
 	MAP_WINDOW_HSCROLL = MAIN_FRAME_MENU + 1000,
 	MAP_WINDOW_VSCROLL,
@@ -53,6 +53,9 @@ enum
 	MAP_POPUP_MENU_PASTE,
 	MAP_POPUP_MENU_DELETE,
 
+	MAP_POPUP_MENU_COPY_SERVER_ID,
+	MAP_POPUP_MENU_COPY_CLIENT_ID,
+	MAP_POPUP_MENU_COPY_NAME,
 	MAP_POPUP_MENU_BROWSE_TILE,
 
 	MAP_POPUP_MENU_SWITCH_DOOR,
@@ -86,13 +89,13 @@ enum
 	REPLACE_DIALOG_FIND_LIST,
 	REPLACE_DIALOG_WITH_TEXT,
 	REPLACE_DIALOG_WITH_LIST,
-	
+
 	MAP_STATISTICS_EXPORT_XML,
 
 	EXTENSIONS_OPEN_FOLDER_BUTTON,
 
 	MAP_WINDOW_FILE_BUTTON,
-	
+
 	PALETTE_ITEM_CHOICEBOOK,
 	PALETTE_CHOICEBOOK,
 
@@ -126,7 +129,7 @@ enum
 	PALETTE_SPAWN_BRUSH_BUTTON,
 	PALETTE_CREATURE_SPAWN_TIME,
 	PALETTE_CREATURE_SPAWN_SIZE,
-	
+
 	PALETTE_TERRAIN_NORMAL_DOOR,
 	PALETTE_TERRAIN_LOCKED_DOOR,
 	PALETTE_TERRAIN_MAGIC_DOOR,
@@ -163,6 +166,24 @@ enum
 
 	PALETTE_DELAYED_REFRESH_TIMER,
 	PALETTE_LAYOUT_FIX_TIMER,
+	
+	TOOLBAR_POSITION_GO,
+	TOOLBAR_SIZES_CIRCULAR,
+	TOOLBAR_SIZES_RECTANGULAR,
+	TOOLBAR_SIZES_1,
+	TOOLBAR_SIZES_2,
+	TOOLBAR_SIZES_3,
+	TOOLBAR_SIZES_4,
+	TOOLBAR_SIZES_5,
+	TOOLBAR_SIZES_6,
+	TOOLBAR_SIZES_7
+};
+
+enum ToolBarID {
+	TOOLBAR_STANDARD,
+	TOOLBAR_BRUSHES,
+	TOOLBAR_POSITION,
+	TOOLBAR_SIZES
 };
 
 #endif

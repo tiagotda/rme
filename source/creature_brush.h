@@ -6,10 +6,14 @@
 //=============================================================================
 // CreatureBrush, place creatures
 
-class CreatureBrush : public Brush {
+class CreatureBrush : public Brush
+{
 public:
 	CreatureBrush(CreatureType* type); // Create a RAWBrush of the specified type
 	virtual ~CreatureBrush();
+
+	bool isCreature() const { return true; }
+	CreatureBrush* asCreature() { return static_cast<CreatureBrush*>(this); }
 
 	virtual bool canDraw(BaseMap* map, const Position& position) const;
 	virtual void draw(BaseMap* map, Tile* tile, void* parameter);
@@ -19,9 +23,10 @@ public:
 
 	virtual int getLookID() const; // We don't have a look type, this will always return 0
 	virtual std::string getName() const;
-	virtual bool canDrag() const {return false;}
-	virtual bool canSmear() const {return true;}
-	virtual bool oneSizeFitsAll() const {return true;}
+	virtual bool canDrag() const { return false; }
+	virtual bool canSmear() const { return true; }
+	virtual bool oneSizeFitsAll() const { return true; }
+
 protected:
 	CreatureType* creature_type;
 };

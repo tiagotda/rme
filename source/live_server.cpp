@@ -27,7 +27,7 @@ bool LiveServer::bind()
 {
 	NetworkConnection& connection = NetworkConnection::getInstance();
 	if(!connection.start()) {
-		setLastError(wxT("The previous connection has not been terminated yet."));
+		setLastError("The previous connection has not been terminated yet.");
 		return false;
 	}
 
@@ -40,7 +40,7 @@ bool LiveServer::bind()
 	boost::system::error_code error;
 	acceptor->set_option(boost::asio::ip::tcp::no_delay(true), error);
 	if(error) {
-		setLastError(wxT("Error: ") + error.message());
+		setLastError("Error: " + error.message());
 		return false;
 	}
 
@@ -59,7 +59,7 @@ void LiveServer::close()
 	clients.clear();
 
 	if(log) {
-		log->Message(wxT("Server was shutdown."));
+		log->Message("Server was shutdown.");
 		log->Disconnect();
 		log = nullptr;
 	}
@@ -73,7 +73,7 @@ void LiveServer::close()
 		socket->close();
 	}
 }
- 
+
 void LiveServer::acceptClient()
 {
 	static uint32_t id = 0;
@@ -125,10 +125,10 @@ void LiveServer::updateCursor(const Position& position)
 	cursor.id = 0;
 	cursor.pos = position;
 	cursor.color = wxColor(
-		settings.getInteger(Config::CURSOR_RED),
-		settings.getInteger(Config::CURSOR_GREEN),
-		settings.getInteger(Config::CURSOR_BLUE),
-		settings.getInteger(Config::CURSOR_ALPHA)
+		g_settings.getInteger(Config::CURSOR_RED),
+		g_settings.getInteger(Config::CURSOR_GREEN),
+		g_settings.getInteger(Config::CURSOR_BLUE),
+		g_settings.getInteger(Config::CURSOR_ALPHA)
 	);
 	broadcastCursor(cursor);
 }
@@ -146,7 +146,7 @@ uint16_t LiveServer::getPort() const
 bool LiveServer::setPort(int32_t newPort)
 {
 	if(newPort < 1 || newPort > 65535) {
-		setLastError(wxT("Port must be a number in the range 1-65535."));
+		setLastError("Port must be a number in the range 1-65535.");
 		return false;
 	}
 	port = newPort;
@@ -284,8 +284,8 @@ LiveLogTab* LiveServer::createLogWindow(wxWindow* parent)
 	ASSERT(mapTabBook);
 
 	log = newd LiveLogTab(mapTabBook, this);
-	log->Message(wxT("New Live mapping session started."));
-	log->Message(wxT("Hosted on server ") + getHostName() + wxT("."));
+	log->Message("New Live mapping session started.");
+	log->Message("Hosted on server " + getHostName() + ".");
 
 	updateClientList();
 	return log;
